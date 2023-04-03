@@ -4,7 +4,7 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const PaymentSplitter = artifacts.require('PaymentSplitter');
-const ERC20 = artifacts.require('IERC20');
+const ERC20 = artifacts.require('$ERC20');
 
 contract('PaymentSplitter', function (accounts) {
   const [owner, payee1, payee2, payee3, nonpayee1, payer1] = accounts;
