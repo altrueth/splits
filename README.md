@@ -16,9 +16,29 @@ A comparison of lines of code yields the following:
 
 Just by looking at the complexity of the code, we choose to start with OpenZeppelin's implementation for the sake of simplicity.
 
-## PaymentSplitter 
+Additional features that may be factored in later include:
 
-`PaymentSplitter` follows a *pull payment* model. This means that payments are not automatically forwarded to the accounts but kept in this contract, and the actual transfer is triggered as a separate step by calling the `release` function.
+| Feature | OpenZeppelin | 0xSplits |
+| --- | --- | --- |
+| Handles ether splits | ✅ | ✅ |
+| Handles ERC20 splits | ✅ | ✅ |
+| Pull-Payment Implementation | ✅ | ✅ |
+| Distribution of split can be updated | ❌ | ✅ |
+
+## Implementation
+
+From the corresponding OpenZeppeling documentation:
+
+> This contract allows to split Ether payments among a group of accounts. The sender does not need to be aware that the Ether will be split in this way, since it is handled transparently by the contract.
+>
+> The split can be in equal parts or in any other arbitrary proportion. The way this is specified is by assigning each account to a number of shares. Of all the Ether that this contract receives, each account will then be able to claim an amount proportional to the percentage of total shares they were assigned.
+>
+> `PaymentSplitter` follows a *pull payment* model. This means that payments are not automatically forwarded to the accounts but kept in this contract, and the actual transfer is triggered as a separate step by calling the `release` function.
+
+Modifications to the current implemenation:
+
+- The contract needs to know which account is the validator owner, in case the validator exits. In the standard implementation the recipient accounts are stored in an array. In this implementation, the validator owner should always be listed in the first position (index 0). This requires no modification to the contract code, but instead be implemented in the UI that deploys the contract.
+- Should a validator exit, this contract shall receive the full stake (32 ETH), which should not be split, but rather forwarded in full to the validator owner.
 
 ## License
 
