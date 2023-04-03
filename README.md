@@ -9,8 +9,8 @@ There are two reference implemetations for splitter contracts:
 
 A comparison of lines of code yields the following:
 
-| Project | Files | code | blank | comment | total |
-| --- | --- | --- | --- | ---|
+| Project | Files | Lined of code | Blank Lines | Comment Lines | Total Lines |
+| --- | --- | --- | --- | ---| --- |
 | OpenZeppelin | 1 | 94 | 31 | 89 | 214 |
 | 0xSplits | 5 | 654 | 102 | 522 | 1278 |
 
