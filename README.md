@@ -42,11 +42,31 @@ Modifications to the current implemenation:
 
 ## Implementation
 
-The modified `PaymentSplitter.sol` can be found int the contracts folder with the following 3 modifications to the original contract:
+The modified `PaymentSplitter.sol` can be found int the contracts folder with the following 3 modifications to the original contract. You can check that these are the only modifications by doing a **diff** between the original [contract](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/finance/PaymentSplitter.sol) and the modified [contract](contracts/PaymentSplitter.sol).
 
-1. Line 44:
+1. Line 44, defines an internal constant *STAKE* with a value of 32 ether:
+
 ```Solidity
     uint256 private constant STAKE = 32 ether;
+```
+
+2. Lines 131-133, if *totalReceived* is larger than *STAKE*, substracts *STAKE* from *totalReceived*, which helps keep the accounting in check because we are only tracking the rewards and how they should be split among the various payees: 
+
+```Solidity
+        if(totalReceived >= STAKE) {
+            totalReceived -= STAKE;
+        }
+```
+
+3. Lines 201-206, modifies the original `return` value for the function `_pendingPayment()` by storing the original value in the *payment* variable, and then checks if the current balance is equal or larger than *STAKE*, and if the payee is the validator, in which case adds the value of *STAKE* to the payment, otherwise returns as the original function.
+
+```Solidity
+        uint256 payment = (totalReceived * _shares[account]) / _totalShares - alreadyReleased;
+        if(address(this).balance >= STAKE && account == payee(0)){
+            return STAKE + payment;
+        } else {
+            return payment;
+        }
 ```
 
 ## License
