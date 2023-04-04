@@ -25,7 +25,7 @@ Additional features that may be factored in later include:
 | Pull-Payment Implementation | ✅ | ✅ |
 | Distribution of split can be updated | ❌ | ✅ |
 
-## Implementation
+## Considerations
 
 From the corresponding OpenZeppeling documentation:
 
@@ -39,6 +39,15 @@ Modifications to the current implemenation:
 
 - The contract needs to know which account is the validator owner, in case the validator exits. In the standard implementation the recipient accounts are stored in an array. In this implementation, the validator owner should always be listed in the first position (index 0). This requires no modification to the contract code, but instead be implemented in the UI that deploys the contract.
 - Should a validator exit, this contract shall receive the full stake (32 ETH), which should not be split, but rather forwarded in full to the validator owner.
+
+## Implementation
+
+The modified `PaymentSplitter.sol` can be found int the contracts folder with the following 3 modifications to the original contract:
+
+1. Line 44:
+```Solidity
+    uint256 private constant STAKE = 32 ether;
+```
 
 ## License
 
