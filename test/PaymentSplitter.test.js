@@ -10,6 +10,7 @@ contract('PaymentSplitter', function (accounts) {
   const [owner, payee1, payee2, payee3, nonpayee1, payer1] = accounts;
 
   const amount = ether('1');
+  const amountPlusStake = ether('33');
 
   it('rejects an empty set of payees', async function () {
     await expectRevert(PaymentSplitter.new([], []), 'PaymentSplitter: no payees');
@@ -211,6 +212,73 @@ contract('PaymentSplitter', function (accounts) {
         expect(await this.token.balanceOf(payee1)).to.be.bignumber.equal(ether('0.40'));
         expect(await this.token.balanceOf(payee2)).to.be.bignumber.equal(ether('0.20'));
         expect(await this.token.balanceOf(payee3)).to.be.bignumber.equal(ether('1.40'));
+      });
+    });
+  });
+
+  context('once deployed', function () {
+    beforeEach(async function () {
+      this.payees = [payee1, payee2];
+      this.shares = [90, 10];
+
+      this.contract = await PaymentSplitter.new(this.payees, this.shares);
+    });
+
+    describe('distributes funds to payees including stake', function () {
+      it('validator claims payment first', async function () {
+        await send.ether(payer1, this.contract.address, amountPlusStake);
+
+        // receive funds
+        const initBalance = await balance.current(this.contract.address);
+        expect(initBalance).to.be.bignumber.equal(amountPlusStake);
+
+        // distribute to payees
+
+        const tracker1 = await balance.tracker(payee1);
+        const receipt1 = await this.contract.release(payee1);
+        const profit1 = await tracker1.delta();
+        expect(profit1).to.be.bignumber.equal(ether('32.90'));
+        expectEvent(receipt1, 'PaymentReleased', { to: payee1, amount: profit1 });
+
+        const tracker2 = await balance.tracker(payee2);
+        const receipt2 = await this.contract.release(payee2);
+        const profit2 = await tracker2.delta();
+        expect(profit2).to.be.bignumber.equal(ether('0.10'));
+        expectEvent(receipt2, 'PaymentReleased', { to: payee2, amount: profit2 });
+
+        // end balance should be zero
+        expect(await balance.current(this.contract.address)).to.be.bignumber.equal('0');
+
+        // check correct funds released accounting
+        expect(await this.contract.totalReleased()).to.be.bignumber.equal(initBalance);
+      });
+
+      it('validator claims payment last', async function () {
+        await send.ether(payer1, this.contract.address, amountPlusStake);
+
+        // receive funds
+        const initBalance = await balance.current(this.contract.address);
+        expect(initBalance).to.be.bignumber.equal(amountPlusStake);
+
+        // distribute to payees
+
+        const tracker2 = await balance.tracker(payee2);
+        const receipt2 = await this.contract.release(payee2);
+        const profit2 = await tracker2.delta();
+        expect(profit2).to.be.bignumber.equal(ether('0.10'));
+        expectEvent(receipt2, 'PaymentReleased', { to: payee2, amount: profit2 });
+
+        const tracker1 = await balance.tracker(payee1);
+        const receipt1 = await this.contract.release(payee1);
+        const profit1 = await tracker1.delta();
+        expect(profit1).to.be.bignumber.equal(ether('32.90'));
+        expectEvent(receipt1, 'PaymentReleased', { to: payee1, amount: profit1 });
+
+        // end balance should be zero
+        expect(await balance.current(this.contract.address)).to.be.bignumber.equal('0');
+
+        // check correct funds released accounting
+        expect(await this.contract.totalReleased()).to.be.bignumber.equal(initBalance);
       });
     });
   });

@@ -41,6 +41,8 @@ contract PaymentSplitter is Context {
     mapping(IERC20 => uint256) private _erc20TotalReleased;
     mapping(IERC20 => mapping(address => uint256)) private _erc20Released;
 
+    uint256 private constant STAKE = 32 ether;
+
     /**
      * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
      * the matching position in the `shares` array.
@@ -126,6 +128,9 @@ contract PaymentSplitter is Context {
      */
     function releasable(address account) public view returns (uint256) {
         uint256 totalReceived = address(this).balance + totalReleased();
+        if(totalReceived >= STAKE) {
+            totalReceived -= STAKE;
+        }
         return _pendingPayment(account, totalReceived, released(account));
     }
 
@@ -193,7 +198,12 @@ contract PaymentSplitter is Context {
         uint256 totalReceived,
         uint256 alreadyReleased
     ) private view returns (uint256) {
-        return (totalReceived * _shares[account]) / _totalShares - alreadyReleased;
+        uint256 payment = (totalReceived * _shares[account]) / _totalShares - alreadyReleased;
+        if(address(this).balance >= STAKE && account == payee(0)){
+            return STAKE + payment;
+        } else {
+            return payment;
+        }
     }
 
     /**
