@@ -73,6 +73,10 @@ The modified `PaymentSplitter.sol` can be found int the contracts folder with th
 
 The original [unit tests](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/test/finance/PaymentSplitter.test.js) for the PaymentSplitter contract test the correct distribution of 1 ether of funds among 3 recipients. [Additional unit tests](test/PaymentSplitter.test.js) are included to check for the correct distribution of 33 ether in funds in two different cases: (a) when the first one to claim the funds is the validator and (b) when the validator is the last one to claim the funds.
 
+## Deployment
+
+The contract can be deployed on the Zhejiang testnet with `npx thirdweb deploy`. Infura does not currently support Zhenjiang.
+
 ## License
 
 This software is licensed under the [MIT License](LICENSE).
